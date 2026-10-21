@@ -102,6 +102,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
       <section class="box">
         <span class="label">Rig</span>
+        <div class="btns" role="group" aria-label="Body">
+          <button class="btn" id="body-male" aria-pressed="true">Male</button>
+          <button class="btn" id="body-female" aria-pressed="false">Female</button>
+        </div>
         <label class="toggle" for="headless"><span><b>Headless</b><br><small>Hide the head and face</small></span><input type="checkbox" id="headless"></label>
         <label class="toggle" for="spin"><span><b>Auto spin</b><br><small>Turns slowly until you drag</small></span><input type="checkbox" id="spin"></label>
         <div class="btns" role="group" aria-label="Camera">
@@ -189,7 +193,30 @@ function paint() {
   faceMat.map = faceTexture2(s.head); faceMat.needsUpdate = true;
 }
 
-let faceMat;
+let faceMat, female = {};
+// Real Woman R6 package parts, exported from Studio; they share each box part's six face materials.
+async function loadFemale() {
+  const d = await (await fetch('rigs/woman.json')).json();
+  const b64 = (str, T) => { const bin = atob(str), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new T(u.buffer); };
+  for (const [name, part] of Object.entries(d)) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(b64(part.pos, Float32Array), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(b64(part.nrm, Float32Array), 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(b64(part.uv, Float32Array), 2));
+    part.groups.forEach(([start, count], i) => g.addGroup(start, count, i));
+    const m = new THREE.Mesh(g, parts[name].material); m.visible = false; scene.add(m); female[name] = m;
+  }
+}
+let body = 'male';
+async function setBody(which) {
+  if (which === 'female' && !female.torso) {
+    try { await loadFemale(); } catch (e) { status.hidden = false; status.textContent = 'The female rig could not load. Reload the page to try again.'; return; }
+  }
+  body = which; store('body', which);
+  for (const name of Object.keys(parts)) { parts[name].visible = which === 'male'; if (female[name]) female[name].visible = which === 'female'; }
+  document.getElementById('body-male').setAttribute('aria-pressed', which === 'male');
+  document.getElementById('body-female').setAttribute('aria-pressed', which === 'female');
+}
 function faceTexture2(color) {
   const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
   g.fillStyle = color; g.fillRect(0, 0, 512, 512);
@@ -240,6 +267,7 @@ function init() {
   new ResizeObserver(resize).observe(stage); resize();
   view('front');
   paint(); status.hidden = true;
+  if (store('body') === 'female') setBody('female');
   for (const kind of ['shirt', 'pants']) { const saved = store('worn-' + kind); if (saved) wear(kind, saved, store('name-' + kind) || 'Last ' + kind, true); }
   renderer.setAnimationLoop(() => {
     controls.update(); renderer.render(scene, camera);
@@ -316,6 +344,8 @@ for (const [name, s] of Object.entries(SKINS)) {
   skinsEl.append(b);
 }
 
+document.getElementById('body-male').onclick = () => setBody('male');
+document.getElementById('body-female').onclick = () => setBody('female');
 headless.onchange = () => { head.visible = !headless.checked; store('headless', headless.checked ? '1' : '0'); };
 spin.onchange = () => { controls.autoRotate = spin.checked; controls.autoRotateSpeed = 2; };
 init();
