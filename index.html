@@ -95,6 +95,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
         </div>
       </section>
 
+      <section class="box" id="rack-box">
+        <span class="label">Your clothes</span>
+        <div class="chips" id="rack"></div>
+      </section>
+
       <section class="box">
         <span class="label">Rig</span>
         <label class="toggle" for="headless"><span><b>Headless</b><br><small>Hide the head and face</small></span><input type="checkbox" id="headless"></label>
@@ -136,6 +141,10 @@ const ORDER = {
   right: [RIGHT.L, RIGHT.R, RIGHT.U, RIGHT.D, RIGHT.F, RIGHT.B],
   left:  [LEFT.L,  LEFT.R,  LEFT.U,  LEFT.D,  LEFT.F,  LEFT.B],
 };
+// Clothes made in the Classic Clothing thread; tap one to wear it without picking a file.
+const RACK = [
+  { name: 'Camo Vetements', kind: 'shirt', src: 'rack/camo-vetements-shirt.png' },
+];
 const SKINS = {
   Classic: { head: '#F5CD30', torso: '#0D69AC', arms: '#F5CD30', legs: '#A4BD47' },
   Pale:    { head: '#F2DCCB', torso: '#F2DCCB', arms: '#F2DCCB', legs: '#F2DCCB' },
@@ -289,6 +298,14 @@ for (const kind of ['shirt', 'pants']) {
 }
 
 // Samples and skins
+const rackEl = document.getElementById('rack');
+document.getElementById('rack-box').hidden = !RACK.length;
+for (const item of RACK) {
+  const b = document.createElement('button'); b.className = 'chip'; b.id = 'rack-' + item.src;
+  b.innerHTML = '<i style="background:#222 url(' + item.src + ') -60px -60px / 260px"></i>' + item.name + ' <small>' + item.kind + '</small>';
+  b.onclick = () => wear(item.kind, item.src, item.name);
+  rackEl.append(b);
+}
 const skinsEl = document.getElementById('skins');
 skin = SKINS[store('skin')] ? store('skin') : 'Classic';
 for (const [name, s] of Object.entries(SKINS)) {
