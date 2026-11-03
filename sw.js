@@ -1,6 +1,6 @@
 // Caches the whole app on first visit so it opens with no internet.
-const CACHE = 'vice-v5';
-const FILES = ['./', 'index.html', 'three.min.js', 'OrbitControls.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable.png', 'rack/lava-crack-shirt.png', 'rack/camo-vetements-pants.png', 'rigs/woman.json'];
+const CACHE = 'vice-v6';
+const FILES = ['./', 'index.html', 'three.min.js', 'OrbitControls.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable.png', 'rack/lava-crack-shirt.png', 'rack/camo-vetements-pants.png', 'rigs/woman.json', 'acc/GobbleHat.json', 'acc/GobbleHat.png', 'acc/GobbleHat_Classic.jpg', 'acc/GobbleHat_Vice.jpg', 'acc/PilgrimHat.json', 'acc/PilgrimHat.png', 'acc/PilgrimHat_Classic.jpg', 'acc/PilgrimHat_Vice.jpg', 'acc/PumpkinPieBackpack.json', 'acc/PumpkinPieBackpack.png', 'acc/PumpkinPieBackpack_Classic.jpg', 'acc/PumpkinPieBackpack_Vice.jpg', 'acc/HarvestLeafScarf.json', 'acc/HarvestLeafScarf.png', 'acc/HarvestLeafScarf_Classic.jpg', 'acc/HarvestLeafScarf_Vice.jpg', 'acc/CornucopiaShoulder.json', 'acc/CornucopiaShoulder.png', 'acc/CornucopiaShoulder_Classic.jpg', 'acc/CornucopiaShoulder_Vice.jpg'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(r => r || fetch(e.request))));
